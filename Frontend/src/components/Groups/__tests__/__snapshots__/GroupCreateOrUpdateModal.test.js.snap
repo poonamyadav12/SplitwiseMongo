@@ -1,0 +1,281 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders correctly 1`] = `
+Array [
+  <div
+    className="modal-backdrop show"
+    onClick={[Function]}
+  />,
+  <div
+    aria-modal={true}
+    className="group-create-modal modal"
+    onClick={[Function]}
+    onMouseUp={[Function]}
+    role="dialog"
+    style={
+      Object {
+        "display": "block",
+        "width": "100vw",
+      }
+    }
+    tabIndex={-1}
+  >
+    <div
+      className="modal-dialog"
+      onMouseDown={[Function]}
+    >
+      <div
+        className="modal-content"
+      >
+        <div
+          className="modal-header"
+        >
+          <div
+            className="modal-title h4"
+          >
+            UPDATE THE GROUP
+          </div>
+          <button
+            className="close"
+            onClick={[Function]}
+            type="button"
+          >
+            <span
+              aria-hidden="true"
+            >
+              ×
+            </span>
+            <span
+              className="sr-only"
+            >
+              Close
+            </span>
+          </button>
+        </div>
+        <div
+          className="modal-body"
+          style={
+            Object {
+              "width": "60vw",
+            }
+          }
+        >
+          <div
+            className="container-fluid"
+          >
+            <div
+              className="row"
+            >
+              <div
+                className="col-lg-3"
+              >
+                <div
+                  className="col"
+                  style={
+                    Object {
+                      "textAlign": "center",
+                    }
+                  }
+                >
+                  <div
+                    className="form-group"
+                  >
+                    <label
+                      className="form-label"
+                      htmlFor="imageUplaod"
+                    >
+                      <h5>
+                        Group avatar
+                      </h5>
+                    </label>
+                    <div
+                      onBlur={[Function]}
+                      onClick={[Function]}
+                      onDragEnter={[Function]}
+                      onDragLeave={[Function]}
+                      onDragOver={[Function]}
+                      onDrop={[Function]}
+                      onFocus={[Function]}
+                      onKeyDown={[Function]}
+                      tabIndex={0}
+                    >
+                      <input
+                        autoComplete="off"
+                        multiple={true}
+                        onChange={[Function]}
+                        onClick={[Function]}
+                        style={
+                          Object {
+                            "display": "none",
+                          }
+                        }
+                        tabIndex={-1}
+                        type="file"
+                      />
+                    </div>
+                    <h5>
+                      Drop images or click to upload
+                    </h5>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="col-lg-4"
+              >
+                <div
+                  className="form-group"
+                >
+                  <label
+                    className="form-label"
+                    htmlFor="formGroupName"
+                  >
+                    My group shall be called...
+                  </label>
+                  <input
+                    className="form-control"
+                    defaultValue="Farewell Party"
+                    id="formGroupName"
+                    onChange={[Function]}
+                    placeholder="1600 Pennsylvania Ave"
+                    style={
+                      Object {
+                        "fontSize": "24px",
+                        "width": "40rem",
+                      }
+                    }
+                    type="text"
+                  />
+                </div>
+                <div
+                  className="card-title h5"
+                >
+                  GROUP MEMBERS
+                </div>
+                <div
+                  className="container"
+                >
+                  <div
+                    className="row"
+                  >
+                    <div
+                      className="col-sm-2"
+                    >
+                      <div
+                        className="form-group"
+                      >
+                        <label
+                          className="form-label"
+                          htmlFor="formName0"
+                        >
+                          <h5>
+                            Michael
+                             
+                            Leland
+                          </h5>
+                        </label>
+                      </div>
+                    </div>
+                    <div
+                      className="col-sm-2"
+                    >
+                      <div
+                        className="form-group"
+                      >
+                        <label
+                          className="form-label"
+                          htmlFor="formEmail0"
+                        >
+                          <h5>
+                            michael@gmail.com
+                          </h5>
+                        </label>
+                      </div>
+                    </div>
+                    <div
+                      className="col-sm-1"
+                      style={
+                        Object {
+                          "textAlign": "center",
+                        }
+                      }
+                    />
+                  </div>
+                </div>
+                <div
+                  className="container"
+                >
+                  <div
+                    className="row"
+                  >
+                    <div
+                      className="col-sm-2"
+                    >
+                      <div
+                        className="form-group"
+                      >
+                        <label
+                          className="form-label"
+                          htmlFor="formName1"
+                        >
+                          <h5>
+                            Brett
+                             
+                            Lee
+                          </h5>
+                        </label>
+                      </div>
+                    </div>
+                    <div
+                      className="col-sm-2"
+                    >
+                      <div
+                        className="form-group"
+                      >
+                        <label
+                          className="form-label"
+                          htmlFor="formEmail1"
+                        >
+                          <h5>
+                            brett@gmail.com
+                          </h5>
+                        </label>
+                      </div>
+                    </div>
+                    <div
+                      className="col-sm-1"
+                      style={
+                        Object {
+                          "textAlign": "center",
+                        }
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          className="modal-footer"
+        >
+          <button
+            className="btn btn-secondary"
+            disabled={false}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            className="btn btn-success"
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>,
+]
+`;

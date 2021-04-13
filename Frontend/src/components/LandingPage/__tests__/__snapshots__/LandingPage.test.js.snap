@@ -1,0 +1,51 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders correctly 1`] = `
+<div
+  className="container"
+>
+  <div
+    className="row"
+  >
+    <div
+      className="col-sm-5"
+    >
+      <h1>
+        Less stress when
+      </h1>
+      <h1>
+        sharing expenses
+      </h1>
+      <h1
+        style={
+          Object {
+            "color": "magenta",
+            "marginBottom": "8rem",
+          }
+        }
+      >
+        with housemates.
+      </h1>
+      <h3>
+        Keep track of your shared expenses and balances with housemates, trips, groups, friends, and family.
+      </h3>
+      <a
+        className="btn btn-success"
+        href="/signup"
+        onClick={[Function]}
+        onKeyDown={[Function]}
+      >
+        SIGN UP
+      </a>
+    </div>
+    <div
+      className="col-sm-6"
+    >
+      <img
+        className=""
+        src="https://splitwise-images.s3.amazonaws.com/images/1616199002433"
+      />
+    </div>
+  </div>
+</div>
+`;

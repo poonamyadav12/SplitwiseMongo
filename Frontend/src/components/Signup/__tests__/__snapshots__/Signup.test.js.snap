@@ -1,0 +1,368 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders correctly 1`] = `
+<div
+  className="container"
+>
+  <div
+    className="row"
+    style={
+      Object {
+        "alignItems": "center",
+      }
+    }
+  >
+    <div
+      className="col-lg-3"
+      style={
+        Object {
+          "marginTop": "3%",
+          "width": "20%",
+        }
+      }
+    >
+      <img
+        alt="Logo"
+        src="https://assets.splitwise.com/assets/core/logo-square-65a6124237868b1d2ce2f5db2ab0b7c777e2348b797626816400534116ae22d7.svg"
+        style={
+          Object {
+            "width": "17rem",
+          }
+        }
+      />
+    </div>
+    <div
+      className="col-lg-3"
+    >
+      <div
+        className="col"
+        style={
+          Object {
+            "textAlign": "center",
+          }
+        }
+      >
+        <div
+          className="form-group"
+        >
+          <label
+            className="form-label"
+            htmlFor="imageUplaod"
+          >
+            <h5>
+              Avatar
+            </h5>
+          </label>
+          <div
+            onBlur={[Function]}
+            onClick={[Function]}
+            onDragEnter={[Function]}
+            onDragLeave={[Function]}
+            onDragOver={[Function]}
+            onDrop={[Function]}
+            onFocus={[Function]}
+            onKeyDown={[Function]}
+            tabIndex={0}
+          >
+            <input
+              autoComplete="off"
+              multiple={true}
+              onChange={[Function]}
+              onClick={[Function]}
+              style={
+                Object {
+                  "display": "none",
+                }
+              }
+              tabIndex={-1}
+              type="file"
+            />
+          </div>
+          <h5>
+            Drop images or click to upload
+          </h5>
+        </div>
+      </div>
+    </div>
+    <div
+      className="col-lg-6"
+    >
+      <div
+        className="card"
+        style={
+          Object {
+            "width": "35rem",
+          }
+        }
+      >
+        <form
+          className=""
+        >
+          
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+              htmlFor="formBasicName"
+            >
+              First name
+            </label>
+            <input
+              className="form-control"
+              id="formBasicName"
+              onChange={[Function]}
+              placeholder="Enter first name"
+              type="text"
+            />
+          </div>
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+              htmlFor="formBasicLastName"
+            >
+              Last name
+            </label>
+            <input
+              className="form-control"
+              id="formBasicLastName"
+              onChange={[Function]}
+              placeholder="Enter last name"
+              type="text"
+            />
+          </div>
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+              htmlFor="formBasicEmail"
+            >
+              Email address
+            </label>
+            <input
+              className="form-control"
+              id="formBasicEmail"
+              onChange={[Function]}
+              placeholder="Enter email"
+              type="email"
+            />
+          </div>
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+              htmlFor="formBasicPassword"
+            >
+              Password
+            </label>
+            <input
+              className="form-control"
+              id="formBasicPassword"
+              onChange={[Function]}
+              placeholder="Password"
+              type="password"
+            />
+          </div>
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+            >
+              Currency
+            </label>
+            <div
+              className="rbt"
+              style={
+                Object {
+                  "outline": "none",
+                  "position": "relative",
+                }
+              }
+              tabIndex={-1}
+            >
+              <div
+                style={
+                  Object {
+                    "display": "flex",
+                    "flex": 1,
+                    "height": "100%",
+                    "position": "relative",
+                  }
+                }
+              >
+                <input
+                  aria-autocomplete="both"
+                  aria-expanded={false}
+                  aria-haspopup="listbox"
+                  autoComplete="off"
+                  className="rbt-input-main form-control rbt-input"
+                  onBlur={[Function]}
+                  onChange={[Function]}
+                  onClick={[Function]}
+                  onFocus={[Function]}
+                  onKeyDown={[Function]}
+                  placeholder="Choose a currency..."
+                  role="combobox"
+                  type="text"
+                  value=""
+                />
+                <input
+                  aria-hidden={true}
+                  className="rbt-input-hint"
+                  readOnly={true}
+                  style={
+                    Object {
+                      "backgroundColor": "transparent",
+                      "borderColor": "transparent",
+                      "boxShadow": "none",
+                      "color": "rgba(0, 0, 0, 0.35)",
+                      "left": 0,
+                      "pointerEvents": "none",
+                      "position": "absolute",
+                      "top": 0,
+                      "width": "100%",
+                    }
+                  }
+                  tabIndex={-1}
+                  value=""
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            className="form-group"
+          >
+            <label
+              className="form-label"
+            >
+              Time Zone
+            </label>
+            <div
+              className=" css-2b097c-container"
+              onKeyDown={[Function]}
+            >
+              <span
+                aria-atomic="false"
+                aria-live="polite"
+                aria-relevant="additions text"
+                className="css-1f43avz-a11yText-A11yText"
+              />
+              <div
+                className=" css-yk16xz-control"
+                onMouseDown={[Function]}
+                onTouchEnd={[Function]}
+              >
+                <div
+                  className=" css-g1d714-ValueContainer"
+                >
+                  <div
+                    className=" css-1wa3eu0-placeholder"
+                  >
+                    Select...
+                  </div>
+                  <div
+                    className="css-b8ldur-Input"
+                  >
+                    <div
+                      className=""
+                      style={
+                        Object {
+                          "display": "inline-block",
+                        }
+                      }
+                    >
+                      <input
+                        aria-autocomplete="list"
+                        autoCapitalize="none"
+                        autoComplete="off"
+                        autoCorrect="off"
+                        disabled={false}
+                        id="react-select-3-input"
+                        onBlur={[Function]}
+                        onChange={[Function]}
+                        onFocus={[Function]}
+                        spellCheck="false"
+                        style={
+                          Object {
+                            "background": 0,
+                            "border": 0,
+                            "boxSizing": "content-box",
+                            "color": "inherit",
+                            "fontSize": "inherit",
+                            "label": "input",
+                            "opacity": 1,
+                            "outline": 0,
+                            "padding": 0,
+                            "width": "1px",
+                          }
+                        }
+                        tabIndex="0"
+                        type="text"
+                        value=""
+                      />
+                      <div
+                        style={
+                          Object {
+                            "height": 0,
+                            "left": 0,
+                            "overflow": "scroll",
+                            "position": "absolute",
+                            "top": 0,
+                            "visibility": "hidden",
+                            "whiteSpace": "pre",
+                          }
+                        }
+                      >
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className=" css-1hb7zxy-IndicatorsContainer"
+                >
+                  <span
+                    className=" css-1okebmr-indicatorSeparator"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className=" css-tlfecz-indicatorContainer"
+                    onMouseDown={[Function]}
+                    onTouchEnd={[Function]}
+                  >
+                    <svg
+                      aria-hidden="true"
+                      className="css-tj5bde-Svg"
+                      focusable="false"
+                      height={20}
+                      viewBox="0 0 20 20"
+                      width={20}
+                    >
+                      <path
+                        d="M4.516 7.548c0.436-0.446 1.043-0.481 1.576 0l3.908 3.747 3.908-3.747c0.533-0.481 1.141-0.446 1.574 0 0.436 0.445 0.408 1.197 0 1.615-0.406 0.418-4.695 4.502-4.695 4.502-0.217 0.223-0.502 0.335-0.787 0.335s-0.57-0.112-0.789-0.335c0 0-4.287-4.084-4.695-4.502s-0.436-1.17 0-1.615z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button
+            className="btn btn-success"
+            disabled={false}
+            onClick={[Function]}
+            type="submit"
+          >
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+`;

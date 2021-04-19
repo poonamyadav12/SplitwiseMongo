@@ -1,11 +1,14 @@
 import React, { Component, useState } from 'react';
-import { Accordion, Button, Card, Col, Container, Image, ListGroup, Row } from 'react-bootstrap';
+import { Accordion, Button, Card, Col, Container, Form, Image, ListGroup, Row } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import '../../App.css';
 import { SETTLEUP_TXN } from '../../_helper/money';
 import { LocalizedAmount, UserAvatar } from '../Shared/Shared';
 import { GrEdit } from 'react-icons/gr';
 import { UpdateExpenseModal } from './UpdateExpenseModal';
+import { alertActions } from '../../_actions';
+import axios from 'axios';
+import { SERVER_URL } from '../../_constants';
 var dateFormat = require("dateformat");
 
 export class TransactionView extends Component {
@@ -23,7 +26,7 @@ export class TransactionView extends Component {
                             />
                         </ListGroup>
                     ))}
-                </Accordion> 
+                </Accordion>
             </Card>
         );
     }
@@ -41,6 +44,7 @@ function TransactionAccordian(props) {
             <Accordion.Collapse eventKey={props.transaction.id}>
                 <Card.Body>
                     <TransactionCardDetail transaction={props.transaction} />
+                    <ConnectedComments transaction={props.transaction} />
                 </Card.Body>
             </Accordion.Collapse>
         </Card>
@@ -174,6 +178,110 @@ const TransactionCardDetail = (props) => {
     );
 }
 
+class Comments extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            comment: '',
+            transaction: props.transaction
+        };
+    }
+
+    handleCommentChange(e) {
+        this.setState({ comment: e.target.value });
+    }
+
+    async handleSubmit() {
+        const data = {
+            txnId: this.state.transaction.id,
+            userId: this.props.user.email,
+            comment: this.state.comment
+        };
+        try {
+            const response = await axios.post(SERVER_URL + '/transaction/comment', data);
+            this.setState({ transaction: response.data, comment: '' })
+        } catch (error) {
+            console.log("error", error);
+            const data = error.response.data;
+            const msg = Array.isArray(data) ? data.map(d => d.message) : ["Some error occured, please try again."];
+            this.props.errorAlert(msg);
+        }
+    }
+
+    render() {
+        return (
+            <div
+                style={{
+                    border: '1px solid lightgray',
+                    borderRadius: '5px',
+                }}
+            >
+                {this.state.transaction.comments &&
+                    this.state.transaction.comments.map((comment) => (
+                        <SingleComment
+                            user={this.props.user}
+                            key={comment._id}
+                            comment={comment}
+                        />
+                    ))}
+                <Form style={{ margin: '1rem' }}>
+                    <Form.Group controlId='formBasicComment'>
+                        <Form.Control
+                            as='textarea'
+                            rows={4}
+                            placeholder='Enter Comment'
+                            onChange={this.handleCommentChange.bind(this)}
+                            value={this.state.comment}
+                        />
+                        <div style={{ textAlign: 'right', marginTop: '1rem' }}>
+                            <Button
+                                variant='success'
+                                disabled={!this.state.comment}
+                                onClick={this.handleSubmit.bind(this)}
+                            >
+                                ADD COMMENT
+                    </Button>
+                        </div>
+                    </Form.Group>
+                </Form>
+            </div>
+        );
+    }
+}
+
+const SingleComment = (props) => {
+    const isYou = props.user.email === props.comment.user.email;
+    return (
+        <Container
+            style={{
+                textAlign: isYou ? 'right' : 'left',
+                margin: '1rem',
+                marginRight: isYou ? 'unset' : '15rem',
+                marginLeft: isYou ? '15rem' : 'unset',
+            }}
+            fluid={true}
+        >
+            <Card
+                style={{
+                    border: '1px solid lightgray',
+                    backgroundColor: '#f9f9f9',
+                    borderRadius: '5px',
+                    padding: '1rem',
+                    marginBottom: '1rem',
+                }}
+            >
+                <Card.Body>
+                    <h4>{props.comment.comment}</h4>
+                </Card.Body>
+                <Card.Footer style={{ color: 'green' }}>
+                    {dateFormat(props.comment.createdAt, 'yyyy-mm-dd HH:ss')}
+                </Card.Footer>
+            </Card>
+            <UserAvatar user={props.comment.user} label={isYou ? 'You' : null} />
+        </Container>
+    );
+}
+
 function convertToUiTransactionView(transaction) {
     const amount = transaction.amount;
     const totalpayees = transaction.to.length;
@@ -191,6 +299,11 @@ function mapState(state) {
     const { user } = state.authentication;
     return { user };
 }
+const actionCreators = {
+    errorAlert: alertActions.error,
+    clearAlert: alertActions.clear,
+};
 
 const ConnectedLentTransactionBanner = connect(mapState, {})(LentTransactionBanner);
 const ConnectedPayerTransactionBanner = connect(mapState, {})(PayerTransactionBanner);
+const ConnectedComments = connect(mapState, actionCreators)(Comments);

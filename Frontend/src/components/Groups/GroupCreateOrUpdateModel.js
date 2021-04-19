@@ -64,7 +64,7 @@ function GroupCreateOrUpdateModal(props) {
   >
     <Modal.Header closeButton>
       <Modal.Title>{props.group ? 'UPDATE THE GROUP' : 'START A NEW GROUP'}</Modal.Title>
-      <AlertMessages messages={errorMsg} />
+      <AlertMessages type="danger" messages={errorMsg} />
     </Modal.Header>
     <Modal.Body style={{ width: "60vw" }} >
       <Container fluid={true}>

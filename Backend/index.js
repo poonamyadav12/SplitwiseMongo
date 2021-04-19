@@ -4,10 +4,10 @@ import { json, urlencoded } from 'body-parser';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
-import { getActivities } from './apis/activity_api';
+import { getActivities, getActivitiesV2 } from './apis/activity_api';
 import { createGroup, getAllGroupsForUser, getGroupDetails, joinGroup, leaveGroup, updateGroup } from './apis/group_api';
 import { uploadImage } from './apis/image_upload';
-import { createTransaction, getAllTransactionsForFriend, getAllTransactionsForGroup, getAllTransactionsForUser, settleTransactions, updateTransactions } from './apis/transactions_api';
+import { addComment, createTransaction, getAllTransactionsForFriend, getAllTransactionsForGroup, getAllTransactionsForUser, settleTransactions, updateTransactions } from './apis/transactions_api';
 import { createUser, getUsersBySearchString, updateExistingUser, validateLogin } from './apis/user_api';
 const { checkAuth, auth } = require("./utils/passport");
 const passport = require('passport');
@@ -115,11 +115,15 @@ app.post('/transactions/settle', checkAuth, settleTransactions);
 
 app.get('/transaction/friend', checkAuth, getAllTransactionsForFriend);
 
-app.get('/user/activity', checkAuth, getActivities);
+app.get('/user/activity', getActivities);
+
+app.get('/user/activityv2', getActivitiesV2);
 
 app.post('/image-upload', checkAuth, uploadImage);
 
 app.get('/user/transactions', checkAuth, getAllTransactionsForUser);
+
+app.post('/transaction/comment', addComment);
 
 //Route to handle get group Request Call
 //app.get('/groups/transactions', );

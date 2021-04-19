@@ -235,7 +235,8 @@ function renderMainView(state, setGroupView, reloadHomeView, setFriendView, setD
             return <FriendView key={friend.email} friend={friend} />;
         case ViewComponent.RECENTACTIVITYVIEW:
             const userId = state.activityViewData.userId;
-            return <><Col lg={8}><ActivityView key={userId} userId={userId} setGroupView={setGroupView} /></Col>{dummyRightView}</>;
+            const groups = state.groups;
+            return <><Col lg={8}><ActivityView key={userId} userId={userId} groups={groups} setGroupView={setGroupView} /></Col>{dummyRightView}</>;
         default:
             return '';
     }

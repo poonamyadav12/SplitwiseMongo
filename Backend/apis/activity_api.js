@@ -1,11 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { activitySchema } from '../dataschema/activity_schema.js';
+import { kafka_default_response_handler } from '../kafka/handler.js';
 const ActivityModel = require('../Models/ActivityModel');
 var _ = require('lodash');
 var Joi = require('joi');
 const GroupInfoModel = require('../Models/GroupInfoModel');
+const kafka = require("../kafka/client");
 
-export async function insertActivity( activity) {
+export async function insertActivity(activity) {
     console.log("Inside create Activity post Request");
     const { error, value } = activitySchema.validate(activity);
 
@@ -34,35 +36,52 @@ export async function getActivities(req, res) {
             .end();
     }
 
-    try {
-        const activities = await getActivitiesByUserId(userId);
-        console.log("Activities By User ID " + JSON.stringify(activities));
+    kafka.make_request(
+        "activity-topic",
+        { path: "user-activity", userId },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
+}
 
-        const sortedActivities = activities.slice().sort((a, b) => a.createdAt - b.createdAt)
-        res.status(200).send(sortedActivities).end();
-    } catch (err) {
-        console.log(err);
+export async function getActivitiesV2(req, res) {
+    let userId = req.query.userId;
+    if (!userId) {
         res
-            .status(500)
+            .status(400)
             .send(
                 {
-                    code: err.code,
-                    msg: 'Unable to successfully get the Activities! Please check the application logs for more details.'
+                    code: 'INVALID_PARAM',
+                    msg: 'Invalid User ID'
                 }
             )
             .end();
-    } 
+    }
+
+    kafka.make_request(
+        'activity-topic',
+        {
+            path: 'user-activity-v2',
+            userId,
+            options: {
+                pageIndex: req.query.pageIndex || 1,
+                pageSize: req.query.pageSize || 2,
+                groupName: req.query.groupName,
+                sortBy: req.query.sortBy || 'createdAt',
+                sortOrder: req.query.sortOrder || 'desc',
+            },
+        },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
 }
 
-export async function getActivitiesByUserId( userId) {
-
+export async function getActivitiesByUserId(userId) {
     const groupInfos = await GroupInfoModel.find({ "members": userId });
-    console.log("groupInfos",groupInfos);
+    console.log("groupInfos", groupInfos);
     var id = [];
     for (var i in groupInfos) {
         id.push(groupInfos[i].id);
-      }
-    console.log("id",id);  
+    }
+    console.log("id", id);
     const activity = await ActivityModel.aggregate(
         [{
             $match:
@@ -103,7 +122,7 @@ export async function getActivitiesByUserId( userId) {
             $sort: { "created_at": -1 },
         },
         {
-            $addFields: { createdAt: "$created_at", updatedAt: "$updated_at", "group": { "$arrayElemAt": [ "$group", 0 ], } , "creator":{ "$arrayElemAt": [ "$creator", 0 ]}, "added":{ "$arrayElemAt": [ "$added", 0 ]}}
+            $addFields: { createdAt: "$created_at", updatedAt: "$updated_at", "group": { "$arrayElemAt": ["$group", 0], }, "creator": { "$arrayElemAt": ["$creator", 0] }, "added": { "$arrayElemAt": ["$added", 0] } }
         },
         ]
     );

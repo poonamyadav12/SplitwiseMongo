@@ -42,6 +42,17 @@ class App extends Component {
     );
   }
 }
+
+Array.prototype.unique = function () {
+  var arr = [];
+  for (var i = 0; i < this.length; i++) {
+    if (!arr.includes(this[i])) {
+      arr.push(this[i]);
+    }
+  }
+  return arr;
+}
+
 //Export the App component so that it can be used in index.js
 export default App;
 

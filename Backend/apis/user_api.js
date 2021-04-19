@@ -5,9 +5,11 @@ const bcrypt = require('bcrypt');
 const UserModel = require('../Models/UserModel');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
+const kafka = require("../kafka/client");
+import { kafka_default_response_handler, kafka_response_handler } from '../kafka/handler';
+
 export async function createUser(req, res) {
     console.log("Inside create user post Request");
-
     const { error, value } = Joi.object().keys(
         { user: userschema.required(), }
     ).validate(req.body);
@@ -16,39 +18,19 @@ export async function createUser(req, res) {
         res.status(400).send(error.details);
         return;
     }
-
-    let user = value.user;
-    console.log("User Creation ", JSON.stringify(user));
-    let conn;
-    try {
-        conn = await connection();
-        const storedUser = await getUserById(user.email);
-
-        if (storedUser && isUserInvited(storedUser)) {
-            user = await updateUser(user);
-        } else {
-            user = await insertUser(user);
-        }
-
-    } catch (err) {
-        console.log("coming here", err);
-        res.status(500)
-            .send({
-                code: err.code,
-                msg: "Unable to create user. Please check application logs for more detail.",
-            }
-            ).end();
-        return;
-    } finally {
-        conn && conn.release();
-    }
-    const payload = { _id: user._id, username: user.email };
-    const token = jwt.sign(payload, process.env.SECRET, {
-        expiresIn: 1008000
-    });
-    res.status(200).send({ user, token }).end();
-    return;
-    //res.status(200).cookie('cookie', user.email, { maxAge: 900000, httpOnly: false, path: '/' }).send(user).end();
+    kafka.make_request(
+        "user-topic",
+        { path: "user_signup", body: req.body },
+        (err, results) => kafka_response_handler(res, err, results,
+            (result) => {
+                const user = result.data;
+                const payload = { _id: user._id, username: user.email };
+                const token = jwt.sign(payload, process.env.SECRET, {
+                    expiresIn: 1008000
+                });
+                return res.status(result.status).send({ user, token });
+            })
+    );
 }
 
 export async function updateExistingUser(req, res) {
@@ -61,67 +43,11 @@ export async function updateExistingUser(req, res) {
         res.status(400).send(error.details);
         return;
     }
-
-    const user = value.user;
-    let conn;
-    try {
-        conn = await connection();
-        const storedUser = await getUserById(user.email);
-
-        if (!storedUser) {
-            res.status(500)
-                .send({
-                    code: 'INVALID_USER_ID',
-                    msg: 'Invalid user ID.',
-                }
-                ).end();
-            return;
-        }
-
-        console.log("current user  " + JSON.stringify(user));
-
-        if (user.new_password) {
-            const passwordMatch = await matchPassword(user.password, storedUser.password);
-            if (!passwordMatch) {
-                res.status(500)
-                    .send({
-                        code: 'INVALID_PASSWORD',
-                        msg: 'Invalid password.',
-                    }
-                    ).end();
-                return;
-            }
-            user.password = await hashPassword(user.new_password);
-            delete user.new_password;
-        } else {
-            console.log("Stored pass" + storedUser.password);
-            console.log("current pass" + user.password);
-            if (storedUser.password !== user.password) {
-                res.status(500)
-                    .send({
-                        code: 'INVALID_PASSWORD',
-                        msg: 'Invalid password.',
-                    }
-                    ).end();
-                return;
-            }
-        }
-        console.log("Going inside update user ", user);
-        await updateUser(user);
-    } catch (err) {
-        console.log(err);
-        res.status(500)
-            .send({
-                code: err.code,
-                msg: 'Unable to successfully insert the user! Please check the application logs for more details.',
-            }
-            ).end();
-        return;
-    } finally {
-        conn && conn.release();
-    }
-    res.status(200).cookie('cookie', user.email, { maxAge: 900000, httpOnly: false, path: '/' }).send(user).end();
-    return;
+    kafka.make_request(
+        "user-topic",
+        { path: "user-update", body: req.body },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
 }
 
 export async function validateLogin(req, res) {
@@ -136,40 +62,22 @@ export async function validateLogin(req, res) {
         res.status(400).send(error.details);
         return;
     }
-
     console.log("validateLogin: " + JSON.stringify(value));
-    const { id, password } = value;
-
-    let conn;
-    try {
-        conn = await connection();
-        const user = await getUserById(id);
-        const passwordMatch = await matchPassword(password, user && user.password || '');
-        if (!passwordMatch) {
-            res.status(400)
-                .send({
-                    code: 'INVALID_PASSWORD',
-                    msg: 'Invalid password.',
-                }
-                ).end();
-            return;
-        }
-        if (user) {
-            const payload = { _id: user._id, username: user.email };
-            const token = jwt.sign(payload, process.env.SECRET, {
-                expiresIn: 1008000
-            });
-            res.status(200).send({ user, token }).end();
-            return;
-        }
-        res.status(400).send({ code: 'INVALID_LOGIN', msg: 'UserId and password does not exists.' }).end();
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({ code: err.code, msg: 'Unable to validate the credentials.' }).end();
-        return;
-    } finally {
-        conn && conn.release();
-    }
+    kafka.make_request(
+        "user-topic",
+        { path: "user-login", body: req.body },
+        (err, results) => kafka_response_handler(res, err, results,
+            (result) => {
+                console.log('login response', result)
+                const user = result.data;
+                console.log('user ', user);
+                const payload = { _id: user._id, username: user.email };
+                const token = jwt.sign(payload, process.env.SECRET, {
+                    expiresIn: 1008000
+                });
+                return res.status(result.status).send({ user, token });
+            })
+    );
 }
 
 
@@ -178,16 +86,6 @@ async function insertUser(user) {
     user.password = await hashPassword(user.password);
     var user = new UserModel(user);
     return await user.save();
-}
-
-async function updateUser(user) {
-    console.log("Inside update user");
-    const value = await UserModel.findOneAndUpdate(
-        { email: user.email },
-        { ...user },
-        { new: true }
-    );
-    await value.save();
 }
 
 export async function insertIfNotExist(user) {
@@ -213,28 +111,11 @@ function isUserInvited(user) {
 }
 
 export async function getUsersBySearchString(req, res) {
-    let searchString = req.query.queryString;
-    console.log("Search String " + searchString);
-    let limit = req.query.limit;
-    let conn = null;
-    try {
-        conn = await connection();
-        const users = await searchUsers(searchString, limit);
-        res.status(200).send(users).end();
-    } catch (err) {
-        console.log(err);
-        res
-            .status(500)
-            .send(
-                {
-                    code: err.code,
-                    msg: 'Unable to successfully get the search result! Please check the application logs for more details.'
-                }
-            )
-            .end();
-    } finally {
-        conn && conn.release();
-    }
+    kafka.make_request(
+        "user-topic",
+        { path: "user-search", queryString: req.query.queryString },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
 }
 
 async function searchUsers(searchString = "", limit = 20) {

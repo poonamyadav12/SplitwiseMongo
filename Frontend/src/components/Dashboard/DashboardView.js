@@ -42,7 +42,7 @@ class DashboardView extends React.Component {
 
   render() {
     if (!this.state.transactions) return null;
-    if (this.state.transactions.length === 0) return <h5>No transactions yet. Start adding expenses to see the balances.</h5>;
+    if (this.state.transactions.length === 0) return <h4>No transactions yet. Start adding expenses to see the balances.</h4>;
 
     const calculatedDebt = calculateDebtPerFriend(this.props.user, this.state.transactions);
 
@@ -116,7 +116,7 @@ class DashboardView extends React.Component {
                         setGroupView={this.props.setGroupView}
                       />
                     ))
-                    : <h4 style={{color:"gray"}}>You don't owe anything</h4>}
+                    : <h4 style={{ color: "gray" }}>You don't owe anything</h4>}
                 </ListGroup>
               </Col>
               <Col sm={6}>
@@ -132,7 +132,7 @@ class DashboardView extends React.Component {
                         setGroupView={this.props.setGroupView}
                       />
                     ))
-                    : <h4 style={{color:"gray"}}>You are not owed anything</h4>}
+                    : <h4 style={{ color: "gray" }}>You are not owed anything</h4>}
                 </ListGroup>
               </Col>
             </Row>

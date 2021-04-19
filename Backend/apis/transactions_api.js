@@ -4,10 +4,12 @@ import {
     createtxnschema,
     updatetxnschema,
 } from '../dataschema/transaction_schema.js';
+import { kafka_default_response_handler } from '../kafka/handler.js';
 import { insertActivity } from './activity_api.js';
 const TransactionModel = require('../Models/TransactionModel');
 const UserModel = require('../Models/UserModel');
 var Joi = require('joi');
+const kafka = require("../kafka/client");
 
 export async function createTransaction(req, res) {
     console.log('Inside create txn post Request');
@@ -19,33 +21,12 @@ export async function createTransaction(req, res) {
         return;
     }
     console.log('transaction request ', value);
-    const transaction = value.transaction;
-    try {
-        const modifiedTxn = JSON.parse(JSON.stringify(transaction));
-        modifiedTxn.id = uuidv4();
 
-        //Mongo Db model to save transaction
-        var transactionModel = new TransactionModel(modifiedTxn);
-        await transactionModel.save();
-        const transactionActivity = buiildTransactionActivity(
-            modifiedTxn.from,
-            modifiedTxn.group_id,
-            modifiedTxn
-        );
-        insertActivity(transactionActivity);
-
-        res.status(200).send(modifiedTxn).end();
-    } catch (err) {
-        console.log(err);
-        res
-            .status(500)
-            .send({
-                code: err.code,
-                msg:
-                    'Unable to successfully insert the txn! Please check the application logs for more details.',
-            })
-            .end();
-    } 
+    kafka.make_request(
+        "transaction-topic",
+        { path: "transaction-create", body: req.body },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
 }
 
 export async function updateTransactions(req, res) {
@@ -57,28 +38,11 @@ export async function updateTransactions(req, res) {
         res.status(400).send(error.details);
         return;
     }
-    const transaction = value.transaction;
-    try {
-        //Mongo DB model
-        const value = await TransactionModel.findOneAndUpdate(
-            { id: transaction.id },
-            { ...transaction },
-            { new: true }
-        );
-        await value.save();
-
-        res.status(200).send(transaction).end();
-    } catch (err) {
-        console.log(err);
-        res
-            .status(500)
-            .send({
-                code: err.code,
-                msg:
-                    'Unable to successfully update the txn! Please check the application logs for more details.',
-            })
-            .end();
-    }
+    kafka.make_request(
+        "transaction-topic",
+        { path: "transaction-update", body: req.body },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
 }
 
 export async function settleTransactions(req, res) {
@@ -92,41 +56,11 @@ export async function settleTransactions(req, res) {
         res.status(400).send(error.details);
         return;
     }
-
-    const transactions = value.transactions;
-    try {
-        const modifiedTxns = transactions.map((txn) => {
-            txn.id = uuidv4();
-            return txn;
-        });
-        //Mongo db
-        await Promise.all(
-            modifiedTxns.map(async (txn) => {
-                var transactionModel = new TransactionModel(txn);
-                await transactionModel.save();
-            })
-        );
-        modifiedTxns.map((modifiedTxn) => {
-            const transactionActivity = buiildTransactionActivity(
-                modifiedTxn.from,
-                modifiedTxn.group_id,
-                modifiedTxn
-            );
-            insertActivity(transactionActivity);
-        });
-
-        res.status(200).send(modifiedTxns).end();
-    } catch (err) {
-        console.log(err);
-        res
-            .status(500)
-            .send({
-                code: err.code,
-                msg:
-                    'Unable to successfully insert the txn! Please check the application logs for more details.',
-            })
-            .end();
-    } 
+    kafka.make_request(
+        "transaction-topic",
+        { path: "transaction-settle", body: req.body },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
 }
 
 function buiildTransactionActivity(creator, groupId, transaction) {
@@ -150,7 +84,7 @@ export async function getAllTransactionsForGroup(req, res) {
             .status(400)
             .send({
                 code: 'INVALID_PARAM',
-                msg: 'Invalid User ID',
+                msg: 'Invalid Group ID',
             })
             .end();
     }
@@ -158,9 +92,11 @@ export async function getAllTransactionsForGroup(req, res) {
     console.log('Inside get all transactions for group Request');
 
     try {
-        const transactions = await getTransactionsByGroupId(groupId);
-
-        res.status(200).send(transactions).end();
+        kafka.make_request(
+            "transaction-topic",
+            { path: "transaction-group", groupId },
+            (err, results) => kafka_default_response_handler(res, err, results)
+        );
     } catch (err) {
         console.log(err);
         res
@@ -172,40 +108,6 @@ export async function getAllTransactionsForGroup(req, res) {
             })
             .end();
     }
-}
-
-export async function getTransactionsByGroupId(groupId) {
-    console.log('Group id ', groupId);
-    return TransactionModel.aggregate([
-        {
-            $match: { group_id: groupId },
-        },
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'from',
-                foreignField: 'email',
-                as: 'from',
-            },
-        },
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'to',
-                foreignField: 'email',
-                as: 'to',
-            },
-        },
-        {
-            $sort: { created_at: -1 },
-        },
-        {
-            $addFields: {
-                from: { $arrayElemAt: ['$from', 0] },
-                createdAt: '$created_at',
-            },
-        },
-    ]);
 }
 
 export async function getAllTransactionsForFriend(req, res) {
@@ -223,23 +125,11 @@ export async function getAllTransactionsForFriend(req, res) {
     }
 
     console.log('Inside get friend Transaction Request');
-
-    try {
-        const transactions = await getTransactionsByFriendId(friendId, userId);
-        console.log('Transactions By friend ID  ' + JSON.stringify(transactions));
-
-        res.status(200).send(transactions).end();
-    } catch (err) {
-        console.log(err);
-        res
-            .status(500)
-            .send({
-                code: err.code,
-                msg:
-                    'Unable to successfully get the Friend Transaction! Please check the application logs for more details.',
-            })
-            .end();
-    } 
+    kafka.make_request(
+        "transaction-topic",
+        { path: "transaction-friend", friendId, userId },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
 }
 export async function getAllTransactionsForUser(req, res) {
     // Access the provided 'page' and 'limt' query parameters
@@ -256,22 +146,11 @@ export async function getAllTransactionsForUser(req, res) {
 
     console.log('Inside get User Transaction Request');
 
-    try {
-        const transactions = await getTransactionsByUserId(userId);
-        console.log('Transactions By User ID  ' + JSON.stringify(transactions));
-
-        res.status(200).send(transactions).end();
-    } catch (err) {
-        console.log(err);
-        res
-            .status(500)
-            .send({
-                code: err.code,
-                msg:
-                    'Unable to successfully get the User Transaction! Please check the application logs for more details.',
-            })
-            .end();
-    }
+    kafka.make_request(
+        "transaction-topic",
+        { path: "transaction-user", userId },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
 }
 
 export async function getTransactionsByFriendId(friendId, userId) {
@@ -369,4 +248,20 @@ async function getTransactionsByUserId(userId) {
     ]);
 
     return transactions;
+}
+
+export async function addComment(req, res) {
+    const { error, value } = Joi.object()
+        .keys({ txnId: Joi.string().required(), comment: Joi.string().required(), userId: Joi.string().required() })
+        .validate(req.body);
+    if (error) {
+        res.status(400).send(error.details);
+        return;
+    }
+
+    kafka.make_request(
+        "transaction-topic",
+        { path: "transaction-comment", body: value },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
 }

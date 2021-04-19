@@ -12,6 +12,7 @@ export const userActions = {
 };
 
 function login(username, password) {
+    console.log("Login Action ");
     return async dispatch => {
         dispatch(request({ username }));
         const data = {
@@ -26,10 +27,27 @@ function login(username, password) {
                 withCredentials: true,
             });
             history.push('/login');
+            console.log("Login Action 1 ", response);
             dispatch(success(response.data));
         }
         catch (error) {
-            const msg = (error?.response?.data?.code === "INVALID_LOGIN") ? ["Invalid user ID or password"] : Array.isArray(data) ? data.map(d => d.message) : ["Some error occured, please try again."];
+            console.log("Login Action 2 ", error);
+            const code = error?.response?.data?.code;
+            let msg = ["Some error occured, please try again."];
+            if (!code && Array.isArray(data)) {
+                msg = data.map(d => d.message);
+            } else {
+                switch (code) {
+                    case "INVALID_LOGIN":
+                        msg = ["Invalid user ID or password"];
+                        break;
+                    case "INVALID_USER_ID":
+                        msg = ["Invalid user ID"];
+                        break;
+                    default:
+                    // Do nothing
+                }
+            }
             dispatch(failure(msg));
             dispatch(alertActions.error(msg));
         }

@@ -1,32 +1,55 @@
 import axios from 'axios';
 import React from 'react';
-import { Card, Container, ListGroup, Row } from 'react-bootstrap';
+import { Card, Container, Dropdown, Form, ListGroup, Row, Col } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { alertActions } from '../../_actions';
 import { SERVER_URL } from '../../_constants';
 import { SETTLEUP_TXN } from '../../_helper/money';
 import { GroupAvatar, LocalizedAmount } from '../Shared/Shared';
+import Pagination from 'react-bootstrap/Pagination'
 var dateFormat = require("dateformat");
 
 
 class ActivityView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { recentActivities: [], };
+        this.state = {
+            recentActivities: null,
+            pageIndex: 1,
+            pageSize: 2,
+            isLoading: true,
+            sortOrder: 'desc',
+            groupName: '',
+        };
     }
 
     async componentDidMount() {
         await this.fetchData();
     }
 
-    async fetchData() {
+    async fetchData(index = null, sortOrder = null, pageSize = null, groupName = null) {
         try {
             if (this.props.user) {
+                let queryUrl = `${SERVER_URL}/user/activityv2?userId=${this.props.user.email}`;
+                queryUrl = queryUrl + `&pageIndex=${index != null ? index : this.state.pageIndex}`;
+                queryUrl = queryUrl + `&pageSize=${pageSize || this.state.pageSize}`;
+                queryUrl = queryUrl + `&sortOrder=${sortOrder || this.state.sortOrder}`;
+                if (groupName != null) {
+                    queryUrl = queryUrl + `&groupName=${groupName}`;
+                } else {
+                    queryUrl = queryUrl + `&groupName=${this.state.groupName}`;
+                }
 
-                const recentActivity = await axios.get(`${SERVER_URL}/user/activity?userId=${this.props.user.email}`);
+                const recentActivity = await axios.get(queryUrl);
 
+                const data = recentActivity.data;
                 this.setState({
-                    recentActivities: recentActivity.data,
+                    recentActivities: data.docs,
+                    total: data.totalDocs,
+                    pages: data.totalPages,
+                    hasPrevPage: data.hasPrevPage,
+                    hasNextPage: data.hasNextPage,
+                    isLoading: false,
                 });
             }
         } catch (err) {
@@ -38,19 +61,134 @@ class ActivityView extends React.Component {
         await this.fetchData();
     }
 
+    async goToPage(index) {
+        this.setState({ pageIndex: index, isLoading: true });
+        await this.fetchData(index);
+    }
+
+    async setSortOrder(e) {
+        this.setState({ sortOrder: e.target.value, isLoading: true });
+        await this.fetchData(null, e.target.value);
+    }
+
+    async setPageSize(e) {
+        this.setState({ pageSize: e.target.value, pageIndex: 1, isLoading: true });
+        await this.fetchData(1 /* Reset page index to 1 */, null, e.target.value);
+    }
+
+    async setGroupName(e) {
+        this.setState({ groupName: e.target.value, pageIndex: 1, isLoading: true });
+        await this.fetchData(1 /* Reset page index to 1 */, null, null, e.target.value);
+    }
+
     render() {
-        return <>
-            {this.state.recentActivities.length > 0 && <Card>
-                <Card.Header>
-                    <ListGroup.Item>
-                        <h3> Recent Activity</h3>
-                    </ListGroup.Item>
-                </Card.Header>
-                <ListGroup>
-                    {this.state.recentActivities.map((activity, index) => <ConnectedSingleActivityView activity={activity} setGroupView={this.props.setGroupView} index={index}></ConnectedSingleActivityView>)}
-                </ListGroup>
-            </Card>}
-        </>;
+        return (
+            <>
+                <Row>
+                    <Col lg={4}>
+                        <Form.Group>
+                            <Form.Label>Page size</Form.Label>
+                            <Form.Control
+                                as='select'
+                                defaultValue={this.state.pageSize}
+                                onChange={this.setPageSize.bind(this)}
+                            >
+                                <option value={2}>2</option>
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                            </Form.Control>
+                        </Form.Group>
+                    </Col>
+                    <Col lg={4}>
+                        <Form.Group>
+                            <Form.Label>Filter by group</Form.Label>
+                            <Form.Control
+                                as='select'
+                                defaultValue={this.state.groupName}
+                                onChange={this.setGroupName.bind(this)}
+                            >
+                                <option value={''}>All groups</option>
+                                {this.props.groups &&
+                                    this.props.groups.map((group) => group.name).unique().map((groupName) => (
+                                        <option value={groupName}>{groupName}</option>
+                                    ))}
+                            </Form.Control>
+                        </Form.Group>
+                    </Col>
+                    <Col lg={4}>
+                        <Form.Group>
+                            <Form.Label>Sort by</Form.Label>
+                            <Form.Control
+                                as='select'
+                                defaultValue={this.state.sortOrder}
+                                onChange={this.setSortOrder.bind(this)}
+                            >
+                                <option value={'desc'}>most recent first</option>
+                                <option value={'asc'}>most recent last</option>
+                            </Form.Control>
+                        </Form.Group>
+                    </Col>
+                </Row>
+                {this.state.recentActivities &&
+                    this.state.recentActivities.length > 0 ? (
+                    <Card>
+                        <Card.Header>
+                            <ListGroup.Item>
+                                <h3> Activity log</h3>
+                            </ListGroup.Item>
+                        </Card.Header>
+                        <ListGroup>
+                            {this.state.recentActivities.map((activity, index) => (
+                                <ConnectedSingleActivityView
+                                    activity={activity}
+                                    setGroupView={this.props.setGroupView}
+                                    index={index}
+                                    key={index}
+                                ></ConnectedSingleActivityView>
+                            ))}
+                        </ListGroup>
+                        <div style={{ textAlign: 'center' }}>
+                            <Pagination size='lg'>
+                                <Pagination.First
+                                    onClick={() => this.goToPage(1)}
+                                    disabled={this.state.isLoading}
+                                />
+                                {this.state.hasPrevPage && (
+                                    <Pagination.Prev
+                                        onClick={() => this.goToPage(this.state.pageIndex - 1)}
+                                        disabled={this.state.isLoading}
+                                    />
+                                )}
+                                {Array(this.state.pages)
+                                    .fill()
+                                    .map((element, index) => (
+                                        <Pagination.Item
+                                            key={index + 1}
+                                            onClick={() => this.goToPage(index + 1)}
+                                            disabled={this.state.isLoading}
+                                            active={index + 1 == this.state.pageIndex}
+                                        >
+                                            {index + 1}
+                                        </Pagination.Item>
+                                    ))}
+                                {this.state.hasNextPage && (
+                                    <Pagination.Next
+                                        onClick={() => this.goToPage(this.state.pageIndex + 1)}
+                                        disabled={this.state.isLoading}
+                                    />
+                                )}
+                                <Pagination.Last
+                                    onClick={() => this.goToPage(this.state.pages)}
+                                    disabled={this.state.isLoading}
+                                />
+                            </Pagination>
+                        </div>
+                    </Card>
+                ) : this.state.recentActivities ? (
+                    <h4>No activities yet.</h4>
+                ) : null}
+            </>
+        );
     }
 }
 

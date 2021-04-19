@@ -38,6 +38,13 @@ function UpdateExpenseModal(props) {
 
     if (data.transaction.lentAmount !== null) delete data.transaction.lentAmount;
     if (data.transaction.createdAt !== null) delete data.transaction.createdAt;
+    if (data.transaction.updatedAt !== null) delete data.transaction.updatedAt;
+    if (data.transaction.created_at !== null) delete data.transaction.created_at;
+    if (data.transaction.updated_at !== null) delete data.transaction.updated_at;
+    if (data.transaction.comments) {
+      data.transaction.comments = _.map(data.transaction.comments, cm => _.pick(cm, ['_id', 'userId', 'txnId', 'comment', 'createdAt']));
+    }
+    if (data.transaction.commentUsers !== null) delete data.transaction.commentUsers;
 
     try {
       const response = await axios.post(SERVER_URL + '/transaction/update', data);

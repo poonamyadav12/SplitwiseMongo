@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { rest } from 'lodash';
 import React, { Component } from 'react';
 import { Card, Col, Container, ListGroup, Row } from 'react-bootstrap';
 import { IoMdAdd } from 'react-icons/io';
@@ -7,7 +8,11 @@ import { Redirect } from 'react-router';
 import { Link } from 'react-router-dom';
 import '../../App.css';
 import { alertActions } from '../../_actions';
+import { dataActions } from '../../_actions/data.actions';
+import { viewActions } from '../../_actions/view.actions';
 import { SERVER_URL } from '../../_constants';
+import { ViewComponent } from '../../_constants/view.constants';
+import * as dataFetcher from '../../_helper/datafetcher';
 import { ActivityView } from '../Activity/ActivityView';
 import { DashboardView } from '../Dashboard/DashboardView';
 import { FriendList } from '../Friends/FriendList';
@@ -28,11 +33,6 @@ class Home extends Component {
             isGroupCreateOpen: false,
             friends: [],
         }
-        this.setGroupView = setGroupView.bind(this);
-        this.setFriendView = setFriendView.bind(this);
-        this.setActivityView = setActivityView.bind(this);
-        this.setDashboardView = setDashboardView.bind(this);
-        //this.addNewGroup = this.addNewGroup.bind(this);
     }
 
     componentWillMount() {
@@ -40,39 +40,22 @@ class Home extends Component {
     }
 
     componentDidMount() {
-        this.setLocationState();
-        if (this.props.user) this.fetchData();
-    }
-
-    setLocationState() {
-        if (this.props?.location?.state) {
-            this.setState(
-                {
-                    viewComponent: this.props?.location?.state?.viewComponent || ViewComponent.DASHBOARD,
-                    groupViewData: this.props?.location?.state?.groupViewData,
-                    friendViewData: this.props?.location?.state?.friendViewData,
-                }
-            );
+        if (this.props.user) {
+            this.fetchData();
         }
     }
 
     fetchData() {
-        axios.get(SERVER_URL + '/user/groups?userId=' + this.props.user.email)
-            .then((response) => {
-                //update the state with the response data
-                this.setState({
-                    groups: response.data
-                });
-                let friendsMap = new Map();
-                response.data.flatMap(group => JSON.parse(JSON.stringify(group.members))).filter((member) => member.email !== this.props.user.email).forEach((member) => (friendsMap.set(member.email, member)));
-                this.setState({
-                    friends: Array.from(friendsMap.values()),
-                });
-            });
+        dataFetcher.fetchData(this.props.user.email).then(data =>
+            //update the state with the response data
+            this.setState({
+                ...data
+            }));
     }
+
     reload() {
-        this.setDashboardView();
-        this.fetchData();
+        this.props.setDashboardView();
+        this.props.refreshHomeData(this.props.user.email);
     }
     openCreateGroupForm() {
         this.setState({ isGroupCreateOpen: true });
@@ -93,7 +76,7 @@ class Home extends Component {
                                     <ListGroup>
                                         <ListGroup.Item
                                             style={
-                                                this.state.viewComponent === ViewComponent.DASHBOARD
+                                                this.props.view.viewComponent === ViewComponent.DASHBOARD
                                                     ? { backgroundColor: 'lightgray' }
                                                     : null
                                             }
@@ -101,7 +84,7 @@ class Home extends Component {
                                             <Link
                                                 to={'#'}
                                                 onClick={() =>
-                                                    this.setDashboardView(this.props.user.email)
+                                                    this.props.setDashboardView(this.props.user.email)
                                                 }
                                             >
                                                 DashBoard
@@ -109,7 +92,7 @@ class Home extends Component {
                                         </ListGroup.Item>
                                         <ListGroup.Item
                                             style={
-                                                this.state.viewComponent ===
+                                                this.props.view.viewComponent ===
                                                     ViewComponent.RECENTACTIVITYVIEW
                                                     ? { backgroundColor: 'lightgray' }
                                                     : null
@@ -118,7 +101,7 @@ class Home extends Component {
                                             <Link
                                                 to={'#'}
                                                 onClick={() =>
-                                                    this.setActivityView(this.props.user.email)
+                                                    this.props.setActivityView(this.props.user.email)
                                                 }
                                             >
                                                 Recent Activity
@@ -141,9 +124,9 @@ class Home extends Component {
                                                 {this.state.isGroupCreateOpen ? (
                                                     <GroupCreateOrUpdateModal
                                                         createMode={true}
-                                                        reloadHomeView={this.reload.bind(this)}
                                                         closeModal={() => this.closeCreateGroupForm()}
                                                         isOpen={this.state.isGroupCreateOpen}
+                                                        reloadViews={() => this.props.refreshHomeData(this.props.user.email)}
                                                     />
                                                 ) : null}
                                             </Container>
@@ -151,12 +134,11 @@ class Home extends Component {
                                         <ListGroup.Item>
                                             <GroupList
                                                 focussed={
-                                                    this.state.viewComponent ===
+                                                    this.props.view.viewComponent ===
                                                     ViewComponent.GROUPVIEW
                                                 }
-                                                selectedId={this.state.groupViewData?.groupId}
-                                                groups={this.state.groups}
-                                                setGroupView={this.setGroupView}
+                                                selectedId={this.props.view.groupViewData?.groupId}
+                                                groups={this.props.groups || this.state.groups}
                                             />
                                         </ListGroup.Item>
                                     </ListGroup>
@@ -174,12 +156,11 @@ class Home extends Component {
                                         <ListGroup.Item>
                                             <FriendList
                                                 focussed={
-                                                    this.state.viewComponent ===
+                                                    this.props.view.viewComponent ===
                                                     ViewComponent.FRIENDVIEW
                                                 }
-                                                selectedId={this.state.friendViewData?.friend}
-                                                friends={this.state.friends}
-                                                setFriendView={this.setFriendView}
+                                                selectedId={this.props.view.friendViewData?.friend}
+                                                friends={this.props.friends || this.state.friends}
                                             />
                                         </ListGroup.Item>
                                     </ListGroup>
@@ -187,10 +168,8 @@ class Home extends Component {
                             </Col>
                             {renderMainView(
                                 this.state,
-                                this.setGroupView,
-                                this.reload.bind(this),
-                                this.setFriendView,
-                                this.setDashboardView
+                                this.props.view,
+                                this.reload.bind(this)
                             )}
                         </Row>
                     </Container>
@@ -199,20 +178,8 @@ class Home extends Component {
         );
     }
 }
-function setDashboardView() {
-    this.setState({ viewComponent: ViewComponent.DASHBOARD });
-}
-function setGroupView(groupId) {
-    this.setState({ viewComponent: ViewComponent.GROUPVIEW, groupViewData: { groupId } });
-}
-function setFriendView(friend) {
-    this.setState({ viewComponent: ViewComponent.FRIENDVIEW, friendViewData: { friend } });
-}
-function setActivityView(userId) {
-    this.setState({ viewComponent: ViewComponent.RECENTACTIVITYVIEW, activityViewData: { userId } });
-}
 
-function renderMainView(state, setGroupView, reloadHomeView, setFriendView, setDashboardView) {
+function renderMainView(state, view) {
     const dummyRightView = (<Col lg={2}>
         <Card style={{ width: '18rem' }}>
             <Card.Header>
@@ -224,30 +191,23 @@ function renderMainView(state, setGroupView, reloadHomeView, setFriendView, setD
         </Card.Footer>
         </Card>
     </Col>);
-    switch (state.viewComponent) {
+    switch (view.viewComponent) {
         case ViewComponent.DASHBOARD:
-            return <><Col lg={8}><DashboardView setFriendView={setFriendView} setGroupView={setGroupView} /></Col>{dummyRightView}</>;
+            return <><Col lg={8}><DashboardView /></Col>{dummyRightView}</>;
         case ViewComponent.GROUPVIEW:
-            const groupId = state.groupViewData.groupId;
-            return <GroupView key={groupId} groupId={groupId} reloadHomeView={reloadHomeView} setDashboardView={setDashboardView} />;
+            const groupId = view.groupViewData.groupId;
+            return <GroupView key={groupId} groupId={groupId} />;
         case ViewComponent.FRIENDVIEW:
-            const friend = state.friendViewData.friend;
+            const friend = view.friendViewData.friend;
             return <FriendView key={friend.email} friend={friend} />;
         case ViewComponent.RECENTACTIVITYVIEW:
-            const userId = state.activityViewData.userId;
+            const userId = view.activityViewData.userId;
             const groups = state.groups;
-            return <><Col lg={8}><ActivityView key={userId} userId={userId} groups={groups} setGroupView={setGroupView} /></Col>{dummyRightView}</>;
+            return <><Col lg={8}><ActivityView key={userId} userId={userId} groups={groups} /></Col>{dummyRightView}</>;
         default:
             return '';
     }
 }
-
-export const ViewComponent = Object.freeze({
-    DASHBOARD: 'DASHBOARD',
-    GROUPVIEW: 'GROUPVIEW',
-    FRIENDVIEW: 'FRIENDVIEW',
-    RECENTACTIVITYVIEW: 'RECENTACTIVITYVIEW'
-});
 
 const LinkWithText = (props) => (
     <Container>
@@ -264,12 +224,16 @@ const LinkWithText = (props) => (
 
 function mapState(state) {
     const { user } = state.authentication;
-    return { user };
+    const { groups, friends } = state.data;
+    return { user, view: state.view, groups, friends };
 }
 
 const actionCreators = {
     errorAlert: alertActions.error,
     clearAlert: alertActions.clear,
+    setActivityView: viewActions.setActivityView,
+    setDashboardView: viewActions.setDashboardView,
+    refreshHomeData: dataActions.refreshHomeData,
 };
 
 const connectedHome = connect(mapState, actionCreators)(Home);

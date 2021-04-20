@@ -115,15 +115,15 @@ app.post('/transactions/settle', checkAuth, settleTransactions);
 
 app.get('/transaction/friend', checkAuth, getAllTransactionsForFriend);
 
-app.get('/user/activity', getActivities);
+app.get('/user/activity', checkAuth, getActivities);
 
-app.get('/user/activityv2', getActivitiesV2);
+app.get('/user/activityv2', checkAuth, getActivitiesV2);
 
 app.post('/image-upload', checkAuth, uploadImage);
 
 app.get('/user/transactions', checkAuth, getAllTransactionsForUser);
 
-app.post('/transaction/comment', addComment);
+app.post('/transaction/comment', checkAuth, addComment);
 
 //Route to handle get group Request Call
 //app.get('/groups/transactions', );

@@ -274,7 +274,7 @@ const SingleComment = (props) => {
                     <h4>{props.comment.comment}</h4>
                 </Card.Body>
                 <Card.Footer style={{ color: 'green' }}>
-                    {dateFormat(props.comment.createdAt, 'yyyy-mm-dd HH:ss')}
+                    {dateFormat(props.comment.createdAt, 'yyyy-mm-dd HH:MM')}
                 </Card.Footer>
             </Card>
             <UserAvatar user={props.comment.user} label={isYou ? 'You' : null} />

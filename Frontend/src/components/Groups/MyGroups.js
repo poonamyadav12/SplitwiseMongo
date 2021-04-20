@@ -6,15 +6,15 @@ import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
 import '../../App.css';
 import { alertActions } from '../../_actions';
+import { viewActions } from '../../_actions/view.actions';
 import { SERVER_URL } from '../../_constants';
-import { ViewComponent } from '../Home/Home';
 import { UserAvatar } from '../Shared/Shared';
 
 
 class MyGroups extends Component {
   constructor(props) {
     super(props);
-    this.state = { groups: null, searchString: '' };
+    this.state = { groups: null, searchString: '', viewChanged: false };
   }
 
   async componentDidMount() {
@@ -68,17 +68,13 @@ class MyGroups extends Component {
   }
 
   setGroupView(groupId) {
-    this.setState({
-      viewComponent: ViewComponent.GROUPVIEW,
-      groupViewData: { groupId },
-    });
+    this.props.setGroupView(groupId);
+    this.setState({ viewChanged: true });
   }
 
   setFriendView(friend) {
-    this.setState({
-      viewComponent: ViewComponent.FRIENDVIEW,
-      friendViewData: { friend },
-    });
+    this.props.setFriendView(friend);
+    this.setState({ viewChanged: true });
   }
 
   render() {
@@ -86,18 +82,10 @@ class MyGroups extends Component {
       return <Redirect to='/home' />;
     }
 
-    if (this.state.viewComponent) {
+    if (this.state.viewChanged) {
       return (
         <Redirect
-          to={{
-            pathname: '/home',
-            state: {
-              viewComponent: this.state.viewComponent,
-              friendViewData: this.state.friendViewData,
-              groupViewData: this.state.groupViewData,
-            }
-          }
-          }
+          to={{ pathname: '/home', }}
         />
       );
     }
@@ -297,6 +285,10 @@ function mapState(state) {
 const actionCreators = {
   errorAlert: alertActions.error,
   clearAlert: alertActions.clear,
+  setGroupView: viewActions.setGroupView,
+  setActivityView: viewActions.setActivityView,
+  setDashboardView: viewActions.setDashboardView,
+  setFriendView: viewActions.setFriendView,
 };
 
 const connectedMyGroups = connect(mapState, actionCreators)(MyGroups);

@@ -7,6 +7,7 @@ import { SERVER_URL } from '../../_constants';
 import { SETTLEUP_TXN } from '../../_helper/money';
 import { GroupAvatar, LocalizedAmount } from '../Shared/Shared';
 import Pagination from 'react-bootstrap/Pagination'
+import { viewActions } from '../../_actions/view.actions';
 var dateFormat = require("dateformat");
 
 
@@ -141,7 +142,6 @@ class ActivityView extends React.Component {
                             {this.state.recentActivities.map((activity, index) => (
                                 <ConnectedSingleActivityView
                                     activity={activity}
-                                    setGroupView={this.props.setGroupView}
                                     index={index}
                                     key={index}
                                 ></ConnectedSingleActivityView>
@@ -196,6 +196,7 @@ const SingleActivityView = (props) => {
     const createrName = props.user.email === props.activity.creator.email ? 'you' : props.activity.creator.first_name;
     const groupName = props.activity.group.name;
     const type = props.activity.type;
+    let clickable = true;
     let header = null;
     switch (type) {
         case 'GROUP_CREATION':
@@ -205,6 +206,7 @@ const SingleActivityView = (props) => {
             header = <><b>{createrName}</b>&nbsp;added {' '}<b>{props.activity.added.first_name}</b>{' in '}<b>{groupName}</b></>;
             break;
         case 'MEMBER_DELETED':
+            clickable = false;
             header = <><b>{createrName}</b>&nbsp;left {' '}<b>{props.activity.deleted.first_name}</b>{' '}<b>{groupName}</b></>;
             break;
         case 'TRANSACTION_ADDED':
@@ -223,7 +225,7 @@ const SingleActivityView = (props) => {
                     </>
                 ) : (
                     <>
-                        <b>{createrName}</b>&nbsp;added{' '}
+                        <b>{createrName}</b>&nbsp;added&nbsp;
                         <b>{props.activity.transaction.description}</b>{' ('}
                         <b style={{ color: 'red' }}>
                             <LocalizedAmount
@@ -242,7 +244,7 @@ const SingleActivityView = (props) => {
 
     const date = props.activity.createdAt;
     return (
-        <ListGroup.Item key={props.index} onClick={() => props.setGroupView(props.activity.group.id)}>
+        <ListGroup.Item key={props.index} onClick={() => {if(clickable) props.setGroupView(props.activity.group.id)}}>
             <Container>
                 <Row>
                     <div><GroupAvatar group={props.activity.group} />{header}</div>
@@ -263,6 +265,7 @@ function mapState(state) {
 const actionCreators = {
     errorAlert: alertActions.error,
     clearAlert: alertActions.clear,
+    setGroupView: viewActions.setGroupView,
 };
 
 

@@ -4,6 +4,7 @@ import { Button, Card, Col, Container, ListGroup, Row, Table } from 'react-boots
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { alertActions } from '../../_actions';
+import { viewActions } from '../../_actions/view.actions';
 import { SERVER_URL } from '../../_constants';
 import { calculateDebtPerFriend } from '../../_helper/debtcalculator';
 import { getRoundedAmount } from '../../_helper/money';
@@ -195,7 +196,6 @@ const PerGroupBalanceView = (props) => {
 };
 
 
-
 function mapState(state) {
   const { user } = state.authentication;
   return { user };
@@ -204,6 +204,8 @@ function mapState(state) {
 const actionCreators = {
   errorAlert: alertActions.error,
   clearAlert: alertActions.clear,
+  setGroupView: viewActions.setGroupView,
+  setFriendView: viewActions.setFriendView,
 };
 
 

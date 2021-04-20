@@ -8,6 +8,7 @@ import { BsPersonCheckFill } from 'react-icons/bs';
 import '../../App.css';
 import { alertActions } from '../../_actions';
 import { connect } from 'react-redux';
+import { viewActions } from '../../_actions/view.actions';
 
 
 class GroupList extends Component {
@@ -70,6 +71,7 @@ function mapState(state) {
 const actionCreators = {
     errorAlert: alertActions.error,
     clearAlert: alertActions.clear,
+    setGroupView: viewActions.setGroupView,
 };
 
 

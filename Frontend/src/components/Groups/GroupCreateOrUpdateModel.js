@@ -5,6 +5,7 @@ import { Button, Card, Col, Container, Form, Modal, Row } from 'react-bootstrap'
 import { connect } from 'react-redux';
 import '../../App.css';
 import { alertActions } from '../../_actions';
+import { dataActions } from '../../_actions/data.actions';
 import { SERVER_URL } from '../../_constants';
 import { getDefaultGroupImage } from '../../_constants/avatar';
 import { AlertMessages } from '../Alert/Alert';
@@ -43,7 +44,7 @@ function GroupCreateOrUpdateModal(props) {
     }
     try {
       const response = await axios.post(SERVER_URL + (props.createMode ? '/group/create' : '/group/update'), { group });
-      props.reloadHomeView();
+      props.reloadViews();
       props.closeModal();
 
     } catch (error) {
@@ -103,6 +104,7 @@ function mapState(state) {
 const actionCreators = {
   errorAlert: alertActions.error,
   clearAlert: alertActions.clear,
+  refreshHomeData: dataActions.refreshHomeData,
 };
 
 const connectedGroupCreateOrUpdateModal = connect(mapState, actionCreators)(GroupCreateOrUpdateModal);

@@ -5,6 +5,8 @@ import CurrencyInput from 'react-currency-input';
 import { GrEdit } from 'react-icons/gr';
 import { connect } from 'react-redux';
 import { alertActions } from '../../_actions';
+import { dataActions } from '../../_actions/data.actions';
+import { viewActions } from '../../_actions/view.actions';
 import { SERVER_URL } from '../../_constants';
 import { calculateDebtForAGroup } from '../../_helper/debtcalculator';
 import { CURRENCYFORMAT, getRoundedAmount } from '../../_helper/money';
@@ -69,7 +71,6 @@ class GroupView extends React.Component {
                                     <ConnectedGroupHeader
                                         data={{ group: this.state.group }}
                                         canLeave={canLeave}
-                                        reloadHomeView={this.props.reloadHomeView}
                                         reloadGroupView={this.forceReload.bind(this)}
                                     />
                                     <TransactionView
@@ -175,8 +176,8 @@ const GroupHeader = (props) => {
         };
         try {
             const response = await axios.post(SERVER_URL + '/group/leave', data);
-
-            props.reloadHomeView();
+            props.setDashboardView();
+            props.refreshHomeData(props.user.email);
             props.reloadGroupView();
         } catch (error) {
             const data = error.response.data;
@@ -193,7 +194,7 @@ const GroupHeader = (props) => {
         try {
             const response = await axios.post(SERVER_URL + '/group/join', data);
 
-            props.reloadHomeView();
+            props.refreshHomeData(props.user.email);
             props.reloadGroupView();
         } catch (error) {
             const data = error.response.data;
@@ -218,8 +219,8 @@ const GroupHeader = (props) => {
                             {isGroupUpdateOpen ? (
                                 <GroupCreateOrUpdateModal
                                     group={props.data.group}
-                                    reloadHomeView={() => {
-                                        props.reloadHomeView();
+                                    reloadViews={() => {
+                                        props.refreshHomeData(props.user.email);
                                         props.reloadGroupView();
                                     }}
                                     createMode={false}
@@ -410,6 +411,8 @@ function mapState(state) {
 const actionCreators = {
     errorAlert: alertActions.error,
     clearAlert: alertActions.clear,
+    refreshHomeData: dataActions.refreshHomeData,
+    setDashboardView: viewActions.setDashboardView,
 };
 
 

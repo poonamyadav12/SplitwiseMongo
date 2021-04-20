@@ -3,8 +3,10 @@ import '../../App.css';
 import { FaTag } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { ListGroup, Card } from 'react-bootstrap';
+import { viewActions } from '../../_actions/view.actions';
+import { connect } from 'react-redux';
 
-export class FriendList extends Component {
+class FriendList extends Component {
 
     render() {
         return <Card style={{ width: '15rem' }}>
@@ -20,3 +22,16 @@ export class FriendList extends Component {
 }
 
 const FriendName = (props) => <Link to="#" onClick={() => props.setFriendView(props.friend)} ><FaTag />&nbsp;{props.friendName}</Link>
+
+
+function mapState(state) {
+    return {};
+}
+
+const actionCreators = {
+    setFriendView: viewActions.setFriendView,
+};
+
+
+const connectedFriendList = connect(mapState, actionCreators)(FriendList);
+export { connectedFriendList as FriendList };

@@ -128,3 +128,6 @@
   display: block;
   border: 1px solid blue;
 }
+.react-tel-input .form-control {
+  width: 35rem !important;
+}

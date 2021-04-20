@@ -9,6 +9,8 @@ import { getDefaultUserImage } from '../../_constants/avatar';
 import { CURRENCY } from '../../_helper/money';
 import { UploadImage } from '../Image/UploadImage';
 import TimezoneSelect from 'react-timezone-select';
+import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
 
 //Define a Login Component
 class Signup extends Component {
@@ -26,6 +28,7 @@ class Signup extends Component {
             timeZone: null,
             currency: 'USD',
             imageUrl: "",
+            phoneNumber: "",
         }
 
         //Bind the handlers to this class
@@ -37,6 +40,8 @@ class Signup extends Component {
         this.timezoneHandler = this.timezoneHandler.bind(this);
         this.currencyHandler = this.currencyHandler.bind(this);
         this.avatarChangeHandler = this.avatarChangeHandler.bind(this);
+        this.setPhoneNumber = this.setPhoneNumber.bind(this);
+
     }
     //Call the Will Mount to set the auth Flag to false
     componentWillMount() {
@@ -84,9 +89,9 @@ class Signup extends Component {
             currency: value[0].name
         })
     }
-    setHasError = (errorMsg) => {
+    setPhoneNumber = (value) => {
         this.setState({
-            errorMsg: errorMsg
+            phoneNumber: value
         })
     }
     //submit Login handler to send a request to the node backend
@@ -103,6 +108,7 @@ class Signup extends Component {
                 password: this.state.password,
                 time_zone: this.state.timeZone,
                 avatar: this.state.imageUrl,
+                phone_number: this.state.phoneNumber,
 
             }
         }
@@ -144,6 +150,13 @@ class Signup extends Component {
                                     <Form.Group controlId="formBasicPassword">
                                         <Form.Label>Password</Form.Label>
                                         <Form.Control type="password" placeholder="Password" onChange={this.passwordChangeHandler} />
+                                    </Form.Group>
+                                    <Form.Group controlId="formBasicPhoneNumber">
+                                        <Form.Label>Phone Number</Form.Label>
+                                        <PhoneInput
+                                            placeholder="Enter phone number"
+                                            value={this.state.phoneNumber}
+                                            onChange={this.setPhoneNumber} />
                                     </Form.Group>
                                     <Form.Group>
                                         <Form.Label>Currency</Form.Label>

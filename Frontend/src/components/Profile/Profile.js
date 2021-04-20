@@ -10,6 +10,8 @@ import { getDefaultUserImage } from '../../_constants/avatar';
 import { CURRENCY } from '../../_helper/money';
 import { UploadImage } from '../Image/UploadImage';
 import { GrEdit } from 'react-icons/gr';
+import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
 
 //Define a Login Component
 class Profile extends Component {
@@ -28,6 +30,7 @@ class Profile extends Component {
       currency: this.props.user?.default_currency,
       imageUrl: this.props.user?.avatar,
       editMode: false,
+      phoneNumber: this.props.user?.phone_number
     };
 
     //Bind the handlers to this class
@@ -40,6 +43,8 @@ class Profile extends Component {
     this.timezoneHandler = this.timezoneHandler.bind(this);
     this.currencyHandler = this.currencyHandler.bind(this);
     this.avatarChangeHandler = this.avatarChangeHandler.bind(this);
+    this.setPhoneNumber = this.setPhoneNumber.bind(this);
+
   }
   //Call the Will Mount to set the auth Flag to false
   componentWillMount() {
@@ -93,6 +98,11 @@ class Profile extends Component {
       currency: value[0].name
     })
   }
+  setPhoneNumber = (value) => {
+    this.setState({
+      phoneNumber: value
+    })
+  }
   //submit Login handler to send a request to the node backend
   submitSignup = (e) => {
     //var headers = new Headers();
@@ -107,6 +117,7 @@ class Profile extends Component {
         password: this.props.user.password,
         time_zone: this.state.timeZone,
         avatar: this.state.imageUrl,
+        phone_number: this.state.phoneNumber,
       }
     }
 
@@ -142,6 +153,7 @@ class Profile extends Component {
                   <Form>
                     <EditableField parentReloaded={this.state.reloaded} setParentEditMode={this.setEditMode.bind(this)} controlId="formFirstName" label="First name" value={this.state.firstName} onChange={this.firstNameChangeHandler} />
                     <EditableField parentReloaded={this.state.reloaded} setParentEditMode={this.setEditMode.bind(this)} controlId="formLastName" label="Last name" value={this.state.lastName} onChange={this.lastNameChangeHandler} />
+                    <EditablePhoneNumberField parentReloaded={this.state.reloaded} setParentEditMode={this.setEditMode.bind(this)} controlId="formPhoneNumber" label="Phone Number" value={this.state.phoneNumber} onChange={this.setPhoneNumber} />
                     <Form.Group controlId="formBasicEmail">
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'baseline' }}>
                         <Form.Label>Email address</Form.Label>
@@ -231,7 +243,25 @@ const EditablePasswordField = (props) => {
     </div>
   </Form.Group>;
 }
-
+const EditablePhoneNumberField = (props) => {
+  const [editMode, setEditMode] = useState(props.editMode);
+  if (editMode) {
+    return <><Form.Group controlId={`${props.controlId}Edit`}>
+      <Form.Label>{props.label}</Form.Label>
+      <PhoneInput
+        placeholder={props.value || ''}
+        value={props.value || ''}
+        onChange={props.onChange} />
+    </Form.Group>
+    </>;
+  }
+  return <Form.Group controlId={`${props.controlId}View`}>
+    <Form.Label>{props.label}</Form.Label>
+    <div style={{ display: 'flex', alignItems: 'baseline' }}>
+      <Form.Label>{props.value || 'none'}</Form.Label> &nbsp; <GrEdit onClick={() => { setEditMode(true); props.setParentEditMode(true); }} />
+    </div>
+  </Form.Group>;
+}
 
 function mapState(state) {
   const { user } = state.authentication;

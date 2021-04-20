@@ -31,6 +31,7 @@ const userfields = {
     default_currency: Joi.string().min(3).max(3).required().label('Default currency'),
     registration_status: Joi.string().default(SignupStatus.JOINED),
     time_zone: Joi.string().required().label('Time zone'),
+    phone_number: Joi.string().optional().label('Phone Number')
 };
 
 export const userschema = Joi.object().keys({

@@ -20,7 +20,8 @@ var usersSchema = new Schema({
     registration_status: { type: String, required: true, default: SignupStatus.JOINED },
     time_zone: { type: String, required: true },
     created_at: { type: Date, required: true, default: Date.now },
-    updated_at: { type: Date, required: true, default: Date.now }
+    updated_at: { type: Date, required: true, default: Date.now },
+    phone_number:{type:String, required:false}
 },
     {
         versionKey: false

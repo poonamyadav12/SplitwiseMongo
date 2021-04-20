@@ -119,7 +119,7 @@ app.get('/user/activity', checkAuth, getActivities);
 
 app.get('/user/activityv2', checkAuth, getActivitiesV2);
 
-app.post('/image-upload', checkAuth, uploadImage);
+app.post('/image-upload', uploadImage);
 
 app.get('/user/transactions', checkAuth, getAllTransactionsForUser);
 

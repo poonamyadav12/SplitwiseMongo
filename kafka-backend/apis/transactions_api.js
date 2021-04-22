@@ -151,6 +151,30 @@ export async function addComment(message, callback) {
     }
 }
 
+export async function deleteComment(message, callback) {
+    console.log('Inside delete comment post Request');
+    const _id = message.body._id;
+
+    console.log("IdT ", _id);
+    let response = {};
+    let error = {};
+    try {
+        await TransactionModel.updateMany({}, { $pull: { "comments": { "_id": _id } } }, { multi: true });
+        response.status = 200;
+        response.data = "success";
+        return callback(null, response);
+    } catch (err) {
+        console.log(err);
+        error.status = 500;
+        error.data = {
+            code: err.code,
+            msg:
+                'Unable to successfully delete the comment! Please check the application logs for more details.',
+        };
+        return callback(error, null);
+    }
+}
+
 export async function settleTransactions(message, callback) {
     let response = {};
     let error = {};
@@ -382,7 +406,7 @@ async function getTransactionsByUserId(userId) {
             $sort: { created_at: -1 },
         },
         {
-            $addFields: {...commonFieldsMapping, group: { $arrayElemAt: ['$group', 0] },} 
+            $addFields: { ...commonFieldsMapping, group: { $arrayElemAt: ['$group', 0] }, }
         },
 
     ]);

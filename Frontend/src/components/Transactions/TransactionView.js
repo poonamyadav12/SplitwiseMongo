@@ -1,14 +1,16 @@
 import React, { Component, useState } from 'react';
-import { Accordion, Button, Card, Col, Container, Form, Image, ListGroup, Row } from 'react-bootstrap';
+import { Accordion, Button, Card, Col, Container, Form, Image, ListGroup, Modal, Row } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import '../../App.css';
 import { SETTLEUP_TXN } from '../../_helper/money';
 import { LocalizedAmount, UserAvatar } from '../Shared/Shared';
 import { GrEdit } from 'react-icons/gr';
+import { RiChatDeleteLine } from 'react-icons/ri';
 import { UpdateExpenseModal } from './UpdateExpenseModal';
 import { alertActions } from '../../_actions';
 import axios from 'axios';
 import { SERVER_URL } from '../../_constants';
+import { AlertMessages } from '../Alert/Alert';
 var dateFormat = require("dateformat");
 
 export class TransactionView extends Component {
@@ -208,6 +210,7 @@ class Comments extends React.Component {
         }
     }
 
+
     render() {
         return (
             <div
@@ -250,35 +253,97 @@ class Comments extends React.Component {
 }
 
 const SingleComment = (props) => {
+    const [settleUpWarning, openSettleUpWarning] = useState(false);
+    const [hide, setHide] = useState(false);
+    function openSettleUpWarningModal() {
+        openSettleUpWarning(true);
+    }
+    function closeSettleUpWarningModal() {
+        openSettleUpWarning(false);
+    }
+
     const isYou = props.user.email === props.comment.user.email;
     return (
-        <Container
-            style={{
-                textAlign: isYou ? 'right' : 'left',
-                margin: '1rem',
-                marginRight: isYou ? 'unset' : '15rem',
-                marginLeft: isYou ? '15rem' : 'unset',
-            }}
-            fluid={true}
-        >
-            <Card
+        hide ? null :
+            <Container
                 style={{
-                    border: '1px solid lightgray',
-                    backgroundColor: '#f9f9f9',
-                    borderRadius: '5px',
-                    padding: '1rem',
-                    marginBottom: '1rem',
+                    textAlign: isYou ? 'right' : 'left',
+                    margin: '1rem',
+                    marginRight: isYou ? 'unset' : '15rem',
+                    marginLeft: isYou ? '15rem' : 'unset',
                 }}
+                fluid={true}
             >
-                <Card.Body>
-                    <h4>{props.comment.comment}</h4>
-                </Card.Body>
-                <Card.Footer style={{ color: 'green' }}>
-                    {dateFormat(props.comment.createdAt, 'yyyy-mm-dd HH:MM')}
-                </Card.Footer>
-            </Card>
-            <UserAvatar user={props.comment.user} label={isYou ? 'You' : null} />
-        </Container>
+                <Card
+                    style={{
+                        border: '1px solid lightgray',
+                        backgroundColor: '#f9f9f9',
+                        borderRadius: '5px',
+                        padding: '1rem',
+                        marginBottom: '1rem',
+                    }}
+                >
+                    {isYou ? <Card.Header >< RiChatDeleteLine onClick={openSettleUpWarningModal} /><CommentDeleteWarningModal
+                        isOpen={settleUpWarning}
+                        closeModal={closeSettleUpWarningModal}
+                        comment={props.comment}
+                        hide={() => setHide(true)}
+                    /> </Card.Header> : null}
+                    <Card.Body>
+                        <h4>{props.comment.comment}</h4>
+                    </Card.Body>
+                    <Card.Footer style={{ color: 'green' }}>
+                        {dateFormat(props.comment.createdAt, 'yyyy-mm-dd HH:MM')}
+                    </Card.Footer>
+                </Card>
+                <UserAvatar user={props.comment.user} label={isYou ? 'You' : null} />
+            </Container>
+    );
+}
+
+function CommentDeleteWarningModal(props) {
+    async function handleDeleteSubmit() {
+        console.log("Deleting the comment", props.comment._id);
+        const data = {
+            _id: props.comment._id,
+        };
+        try {
+            const response = await axios.post(SERVER_URL + '/transaction/comment/delete', data);
+            props.hide();
+
+        } catch (error) {
+            console.log("error", error);
+            const data = error.response.data;
+            const msg = Array.isArray(data) ? data.map(d => d.message) : ["Some error occured, please try again."];
+            this.props.errorAlert(msg);
+        }
+    }
+    return (
+        <>
+            <Modal
+                show={props.isOpen}
+                onHide={props.closeModal}
+                keyboard={false}
+                className="add-expense-modal"
+                animation={false}
+                style={{ width: "100vw" }}
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title><h2 style={{ color: 'red' }}>Comment Delete</h2></Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p style={{ color: 'blue' }}>Are you sure you want to delete the comment?</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="success" onClick={props.closeModal}>
+                        No
+                    </Button>
+                    <Button variant="danger" onClick={handleDeleteSubmit}>
+                        Yes
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     );
 }
 
@@ -300,6 +365,7 @@ function mapState(state) {
     return { user };
 }
 const actionCreators = {
+    successAlert: alertActions.success,
     errorAlert: alertActions.error,
     clearAlert: alertActions.clear,
 };

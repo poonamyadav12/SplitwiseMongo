@@ -7,12 +7,6 @@ const dotenv = require('dotenv');
 const kafka = require("../kafka/client");
 dotenv.config();
 
-// Setup work and export for the JWT passport strategy
-// var cookieExtractor = function (req) {
-//     var token = null;
-//     if (req && req.cookies) token = req.cookies['jwt'];
-//     return token;
-// };
 function auth() {
     var opts = {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -23,6 +17,8 @@ function auth() {
             console.log('jwt_payload ', JSON.stringify(jwt_payload));
             const user_id = JSON.parse(JSON.stringify(jwt_payload)).username;
             console.log('user ID', user_id);
+             //callback(null, true);
+             //return;
             kafka.make_request(
                 "auth-topic",
                 { path: "user-auth", body: user_id },
@@ -38,25 +34,12 @@ function auth() {
                     }
                 }
             );
-            // Users.findById(user_id, (err, results) => {
-            //     if (err) {
-            //         console.log('jwt_payload ', JSON.stringify(jwt_payload));
-            //         return callback(err, false);
-            //     }
-            //     if (results) {
-            //         console.log('jwt_payload ', JSON.stringify(jwt_payload));
-            //         callback(null, results);
-            //     }
-            //     else {
-            //         console.log('jwt_payload ', JSON.stringify(jwt_payload));
-            //         callback(null, false);
-            //     }
-            // });
         })
     )
 }
 
-exports.auth = auth;
-exports.checkAuth = passport.authenticate("jwt", { session: false });
+//exports.checkAuth = (req, res, next) => { next() };
+ exports.auth = auth;
+ exports.checkAuth = passport.authenticate("jwt", { session: false });
 
 

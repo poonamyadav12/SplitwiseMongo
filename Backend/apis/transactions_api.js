@@ -265,3 +265,19 @@ export async function addComment(req, res) {
         (err, results) => kafka_default_response_handler(res, err, results)
     );
 }
+
+export async function deleteComment(req, res) {
+    const { error, value } = Joi.object()
+        .keys({ _id: Joi.string().required() })
+        .validate(req.body);
+    if (error) {
+        res.status(400).send(error.details);
+        return;
+    }
+
+    kafka.make_request(
+        "transaction-topic",
+        { path: "transaction-comment-delete", body: value },
+        (err, results) => kafka_default_response_handler(res, err, results)
+    );
+}

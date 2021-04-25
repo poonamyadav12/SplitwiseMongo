@@ -1,13 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
-import { ActivityType } from '../dataschema/activity_schema.js';
 import {
     createtxnschema,
-    updatetxnschema,
+    updatetxnschema
 } from '../dataschema/transaction_schema.js';
 import { kafka_default_response_handler } from '../kafka/handler.js';
-import { insertActivity } from './activity_api.js';
-const TransactionModel = require('../Models/TransactionModel');
-const UserModel = require('../Models/UserModel');
 var Joi = require('joi');
 const kafka = require("../kafka/client");
 
@@ -31,7 +26,7 @@ export async function createTransaction(req, res) {
 
 export async function updateTransactions(req, res) {
     console.log('Inside update txn post Request');
-    const { error, value } = Joi.object()
+    const { error } = Joi.object()
         .keys({ transaction: updatetxnschema.required() })
         .validate(req.body);
     if (error) {
@@ -47,7 +42,7 @@ export async function updateTransactions(req, res) {
 
 export async function settleTransactions(req, res) {
     console.log('Inside settle txn post Request');
-    const { error, value } = Joi.object()
+    const { error } = Joi.object()
         .keys({
             transactions: Joi.array().items(createtxnschema),
         })
@@ -60,19 +55,6 @@ export async function settleTransactions(req, res) {
         "transaction-topic",
         { path: "transaction-settle", body: req.body },
         (err, results) => kafka_default_response_handler(res, err, results)
-    );
-}
-
-function buiildTransactionActivity(creator, groupId, transaction) {
-    return JSON.parse(
-        JSON.stringify({
-            user_id: creator,
-            group: {
-                id: groupId,
-            },
-            transaction: transaction,
-            type: ActivityType.TRANSACTION_ADDED,
-        })
     );
 }
 
@@ -151,103 +133,6 @@ export async function getAllTransactionsForUser(req, res) {
         { path: "transaction-user", userId },
         (err, results) => kafka_default_response_handler(res, err, results)
     );
-}
-
-export async function getTransactionsByFriendId(friendId, userId) {
-    console.log('friend id ', friendId);
-    console.log('user id ', userId);
-    const transaction = await TransactionModel.aggregate([
-        {
-            $match: {
-                $or: [
-                    {
-                        $and: [{ from: userId }, { to: friendId }],
-                    },
-                    {
-                        $and: [{ from: friendId }, { to: userId }],
-                    },
-                ],
-            },
-        },
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'from',
-                foreignField: 'email',
-                as: 'from',
-            },
-        },
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'to',
-                foreignField: 'email',
-                as: 'to',
-            },
-        },
-        {
-            $sort: { created_at: -1 },
-        },
-        {
-            $addFields: {
-                createdAt: '$created_at',
-                updatedAt: '$updated_at',
-                from: { $arrayElemAt: ['$from', 0] },
-            },
-        },
-    ]);
-
-    console.log('transaction response ', transaction);
-
-    return transaction;
-}
-
-async function getTransactionsByUserId(userId) {
-    const transactions = await TransactionModel.aggregate([
-        {
-            $match: {
-                $or: [{ from: userId }, { to: userId }],
-            },
-        },
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'from',
-                foreignField: 'email',
-                as: 'from',
-            },
-        },
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'to',
-                foreignField: 'email',
-                as: 'to',
-            },
-        },
-        {
-            $lookup: {
-                from: 'groupinfos',
-                localField: 'group_id',
-                foreignField: 'id',
-                as: 'group',
-            },
-        },
-        {
-            $sort: { created_at: -1 },
-        },
-        {
-            $addFields: {
-                createdAt: '$created_at',
-                updatedAt: '$updated_at',
-                from: { $arrayElemAt: ['$from', 0] },
-                group: { $arrayElemAt: ['$group', 0] },
-            },
-        },
-
-    ]);
-
-    return transactions;
 }
 
 export async function addComment(req, res) {

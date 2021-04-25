@@ -1,5 +1,5 @@
 import { SERVER_URL, userConstants } from '../_constants';
-import { alertActions } from './';
+import { alertActions, viewActions } from './';
 import axios from 'axios';
 import cookie from 'react-cookies';
 import { history } from '../_helper/history.js';
@@ -62,7 +62,10 @@ function login(username, password) {
 
 function logout() {
     cookie.remove('cookie', { path: '/' });
-    return ({ type: userConstants.LOGOUT });
+    return dispatch => {
+        dispatch({ type: userConstants.LOGOUT });
+        dispatch(viewActions.setDashboardView());
+    };
 }
 
 function register(data) {

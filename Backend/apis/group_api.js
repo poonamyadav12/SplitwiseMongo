@@ -1,9 +1,7 @@
 import { creategroupschema, updategroupschema } from '../dataschema/group_schema.js';
 import { kafka_default_response_handler } from '../kafka/handler.js';
-const GroupInfoModel = require('../Models/GroupInfoModel');
 const kafka = require("../kafka/client");
 var Joi = require('joi');
-var _ = require('lodash');
 
 export async function createGroup(req, res) {
     console.log("Inside create group post Request");
@@ -24,7 +22,7 @@ export async function createGroup(req, res) {
 
 export async function updateGroup(req, res) {
     console.log("Inside update group post Request");
-    const { error, value } = Joi.object().keys(
+    const { error } = Joi.object().keys(
         { group: updategroupschema.required(), }
     ).validate(req.body);
 
@@ -41,7 +39,7 @@ export async function updateGroup(req, res) {
 
 export async function leaveGroup(req, res) {
     console.log("Inside leave group post Request");
-    const { error, value } = Joi.object().keys(
+    const { error } = Joi.object().keys(
         {
             groupId: Joi.string().required(),
             userId: Joi.string().required()
@@ -61,7 +59,7 @@ export async function leaveGroup(req, res) {
 
 export async function joinGroup(req, res) {
     console.log("Inside join group post Request");
-    const { error, value } = Joi.object().keys(
+    const { error } = Joi.object().keys(
         {
             groupId: Joi.string().required(),
             userId: Joi.string().required()
@@ -125,19 +123,4 @@ export async function getAllGroupsForUser(req, res) {
         { path: "group-all-for-user", userId },
         (err, results) => kafka_default_response_handler(res, err, results)
     );
-}
-
-
-async function getGroupById(groupId) {
-    const group = await GroupInfoModel.findOne(
-        { id: groupId }
-    );
-    return group;
-}
-
-async function getGroupsByUserId(userId) {
-    console.log("Inside get Groups By User ID");
-    const result = await GroupInfoModel.find({ "members": userId });
-    console.log("Results ", JSON.stringify(result));
-    return result;
 }

@@ -2,7 +2,6 @@
 var JwtStrategy = require("passport-jwt").Strategy;
 var ExtractJwt = require("passport-jwt").ExtractJwt;
 const passport = require("passport");
-const Users = require('../Models/UserModel');
 const dotenv = require('dotenv');
 const kafka = require("../kafka/client");
 dotenv.config();

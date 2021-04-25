@@ -1,4 +1,4 @@
-# Splitwise web app prototype
+# Splitwise web app prototype [Using MERN and Kafka]
 
 ## Problem statement
 Build a prototype of Splitwise app. It shoud provide following functionalities
